@@ -11,10 +11,6 @@ public class Laser : MonoBehaviour
     private Vector2 distanceDiff = Vector2.zero;
     private bool isRaycasting = false;
     private LineRenderer lineRenderer;
-    [SerializeField]
-    public float minZ = -10.5f;
-    [SerializeField]
-    public float maxZ = 9.5f;
     void Start()
     {
         // LineRenderer 추가 및 설정
@@ -29,20 +25,16 @@ public class Laser : MonoBehaviour
         InvokeRepeating("StartRaycasting", 0f, emitInterval);    // emitDuration마다 Raycast 시작
     }
 
-    void LaserRotation(){
-        // Vector3 MaxRotateTheta = transform.eulerAngles;
-        // MaxRotateTheta.z = (MaxRotateTheta.z > 180) ? MaxRotateTheta.z-360 : MaxRotateTheta.z;
-        // MaxRotateTheta.z = Mathf.Clamp(MaxRotateTheta.z,minZ,maxZ);
+    private void LaserRotation(){
         this.transform.Rotate(0, 0, 100f * Time.deltaTime);   // 360도 회전   
-        // this.transform.rotation = Quaternion.Euler(MaxRotateTheta);
     }
-    void StartRaycasting()
+    private void StartRaycasting()
     {       
         isRaycasting = true;    // Raycasting 활성화      
         Invoke("StopRaycasting", emitDuration);     // emitInterval 후에 Raycasting 비활성화
     }
 
-    void StopRaycasting()
+    private void StopRaycasting()
     {
         isRaycasting = false;   // Raycasting 비활성화
 
@@ -51,7 +43,7 @@ public class Laser : MonoBehaviour
         lineRenderer.SetPosition(1, Vector3.zero);
     }
 
-    void Update()
+    private void Update()
     {
         
         if (isRaycasting)
