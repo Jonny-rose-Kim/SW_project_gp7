@@ -11,6 +11,10 @@ public class Laser : MonoBehaviour
     private Vector2 distanceDiff = Vector2.zero;
     private bool isRaycasting = false;
     private LineRenderer lineRenderer;
+    [SerializeField]
+    public float minZ = -10.5f;
+    [SerializeField]
+    public float maxZ = 9.5f;
     void Start()
     {
         // LineRenderer 추가 및 설정
@@ -25,16 +29,20 @@ public class Laser : MonoBehaviour
         InvokeRepeating("StartRaycasting", 0f, emitInterval);    // emitDuration마다 Raycast 시작
     }
 
-    private void LaserRotation(){
+    void LaserRotation(){
+        // Vector3 MaxRotateTheta = transform.eulerAngles;
+        // MaxRotateTheta.z = (MaxRotateTheta.z > 180) ? MaxRotateTheta.z-360 : MaxRotateTheta.z;
+        // MaxRotateTheta.z = Mathf.Clamp(MaxRotateTheta.z,minZ,maxZ);
         this.transform.Rotate(0, 0, 100f * Time.deltaTime);   // 360도 회전   
+        // this.transform.rotation = Quaternion.Euler(MaxRotateTheta);
     }
-    private void StartRaycasting()
+    void StartRaycasting()
     {       
         isRaycasting = true;    // Raycasting 활성화      
         Invoke("StopRaycasting", emitDuration);     // emitInterval 후에 Raycasting 비활성화
     }
 
-    private void StopRaycasting()
+    void StopRaycasting()
     {
         isRaycasting = false;   // Raycasting 비활성화
 
@@ -43,7 +51,7 @@ public class Laser : MonoBehaviour
         lineRenderer.SetPosition(1, Vector3.zero);
     }
 
-    private void Update()
+    void Update()
     {
         
         if (isRaycasting)
@@ -54,9 +62,13 @@ public class Laser : MonoBehaviour
             // 충돌 발생 시 
             if (hitInfo.collider != null)
             {
+                
                 distanceDiff = hitInfo.point - (Vector2)this.transform.position;    // 거리 계산 
                 Debug.Log("Laser hit: " + hitInfo.transform.name + " Distance: " + distanceDiff);
-
+                if (hitInfo.transform.name.Equals("Player"))        // Player와 충돌 시
+                {
+                    hitInfo.transform.SetPositionAndRotation(new Vector3(0, 0, 0), Quaternion.identity);
+                }
                 // 레이저 시작점과 끝점을 설정하여 라인을 그림
                 Debug.DrawLine(this.transform.position, hitInfo.point, Color.red);
                 lineRenderer.SetPosition(0, this.transform.position);
