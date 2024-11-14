@@ -12,6 +12,10 @@ public class Player2 : MonoBehaviour
     private float limit_x = 10.0f;
     [SerializeField]
     private float limit_y = 5.0f;
+    [SerializeField]
+    private float dashCoolTime = 5.0f; // dash cooltime
+    [SerializeField]
+    private float lastDashTime = -5.0f; // last dashtime
 
     [SerializeField]
     private GameObject weapon;
@@ -39,12 +43,15 @@ public class Player2 : MonoBehaviour
         // mousePos로 설정을 해야 내가 움직이는 만큼 카메라도 따라 움직여 온다 .
         // mousePos.x , mousePos.y
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(1) && Time.time >= lastDashTime + dashCoolTime)
         {
-            
+            // 마지막 시간이 Time.time으로 갱신되면 dashcool이 5초라 다시 5초 기다려야함.
             isDashing = true; // 대시 상태로 전환
+            lastDashTime = Time.time; // 대시 실행 시간 갱신. 
             transform.position = Vector3.Lerp(transform.position, targetPosition, dashSpeed * Time.deltaTime);
-            Debug.Log("Input detected: ");
+            // transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+            // moveTowards >> 뚝딱이처럼 움직임.
+            // moveTowards and Lerp difference is what?
         }
         else
         {
