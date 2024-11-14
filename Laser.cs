@@ -6,40 +6,37 @@ using UnityEngine;
 
 public class Laser : MonoBehaviour
 {
-    [SerializeField] private float emitInterval = 0.10f;
-    [SerializeField] private float emitDuration = 999.0f;
+    [SerializeField] private float emitInterval = 3.0f;
+    [SerializeField] private float emitDuration = 3.0f;
+    [SerializeField] private float LineWidht_start = 0.05f;
+    [SerializeField] private float LineWidht_end = 0.05f;
     private Vector2 distanceDiff = Vector2.zero;
     private bool isRaycasting = false;
     private LineRenderer lineRenderer;
-    [SerializeField]
-    public float minZ = -10.5f;
-    [SerializeField]
-    public float maxZ = 9.5f;
+
     void Start()
     {
         // LineRenderer 추가 및 설정
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.startWidth = 0.05f;
-        lineRenderer.endWidth = 0.05f;
-        lineRenderer.startColor = Color.red;
-        lineRenderer.endColor = Color.red;
+        //lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer = GetComponent<LineRenderer>();        
+        lineRenderer.startWidth = LineWidht_start;
+        lineRenderer.endWidth = LineWidht_end;
+        lineRenderer.startColor = Color.blue;
+        lineRenderer.endColor = Color.blue;
         
         float randomRotation = UnityEngine.Random.Range(0f, 360f); // 0도에서 360도 사이의 랜덤 회전값
         this.transform.Rotate(0, 0, randomRotation); // Z 축 기준 회전
-        InvokeRepeating("StartRaycasting", 0f, emitInterval);    // emitDuration마다 Raycast 시작
+       //InvokeRepeating("StartRaycasting", 0f, emitInterval);    // emitInterval마다 Raycast 시작
+        Invoke("StartRaycasting",emitInterval);
     }
 
-    void LaserRotation(){
-        // Vector3 MaxRotateTheta = transform.eulerAngles;
-        // MaxRotateTheta.z = (MaxRotateTheta.z > 180) ? MaxRotateTheta.z-360 : MaxRotateTheta.z;
-        // MaxRotateTheta.z = Mathf.Clamp(MaxRotateTheta.z,minZ,maxZ);
-        this.transform.Rotate(0, 0, 100f * Time.deltaTime);   // 360도 회전   
-        // this.transform.rotation = Quaternion.Euler(MaxRotateTheta);
+    void LaserRotation(){   // 360도 회전   
+        this.transform.Rotate(0, 0, 100f * Time.deltaTime);
     }
     void StartRaycasting()
     {       
         isRaycasting = true;    // Raycasting 활성화      
-        Invoke("StopRaycasting", emitDuration);     // emitInterval 후에 Raycasting 비활성화
+        Invoke("StopRaycasting",emitDuration);     // emitDuration 후에 Raycasting 비활성화
     }
 
     void StopRaycasting()
@@ -49,6 +46,7 @@ public class Laser : MonoBehaviour
         // LineRenderer를 통해 레이저를 지우기 위해 시작점과 끝점을 동일하게 설정
         lineRenderer.SetPosition(0, Vector3.zero);
         lineRenderer.SetPosition(1, Vector3.zero);
+        Invoke("StartRaycasting",emitInterval);
     }
 
     void Update()
@@ -57,7 +55,8 @@ public class Laser : MonoBehaviour
         if (isRaycasting)
         {
             // Raycast를 실행하여 가장 가까운 object 감지
-            RaycastHit2D hitInfo = Physics2D.Raycast(this.transform.position, this.transform.right, Mathf.Infinity, LayerMask.GetMask("OuterWall", "Player"));
+            RaycastHit2D hitInfo = Physics2D.Raycast(this.transform.position, this.transform.right, Mathf.Infinity);
+            //RaycastHit2D hitInfo = Physics2D.Raycast(this.transform.position, this.transform.right, Mathf.Infinity, LayerMask.GetMask("LaserHit"));
 
             // 충돌 발생 시 
             if (hitInfo.collider != null)
@@ -65,12 +64,14 @@ public class Laser : MonoBehaviour
                 
                 distanceDiff = hitInfo.point - (Vector2)this.transform.position;    // 거리 계산 
                 Debug.Log("Laser hit: " + hitInfo.transform.name + " Distance: " + distanceDiff);
-                if (hitInfo.transform.name.Equals("Player"))        // Player와 충돌 시
+                if (hitInfo.transform.name.Equals("Player"))
                 {
                     hitInfo.transform.SetPositionAndRotation(new Vector3(0, 0, 0), Quaternion.identity);
                 }
                 // 레이저 시작점과 끝점을 설정하여 라인을 그림
-                Debug.DrawLine(this.transform.position, hitInfo.point, Color.red);
+                lineRenderer.startColor = Color.blue;
+                lineRenderer.endColor = Color.blue;
+                //Debug.DrawLine(this.transform.position, hitInfo.point, Color.blue);
                 lineRenderer.SetPosition(0, this.transform.position);
                 lineRenderer.SetPosition(1, hitInfo.point);
             }
@@ -81,7 +82,8 @@ public class Laser : MonoBehaviour
                 lineRenderer.SetPosition(1, this.transform.position + this.transform.right * 100f);
                 Debug.Log("No hit detected: " + this);
             }
-            LaserRotation();
+            // LaserRotation(); // Raycasting 중에만 회전됨
         }
+        LaserRotation();    // 상시 회전
     }
 }
